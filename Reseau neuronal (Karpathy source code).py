@@ -8,7 +8,7 @@ import numpy as np
 data = open('input.txt', 'r').read() # Doit être un fichier texte en .txt pour être compris par le programme
 chars = list(set(data))
 data_size, vocab_size = len(data), len(chars)
-print 'data has %d characters, %d unique.' % (data_size, vocab_size)
+print('data has %d characters, %d unique.' % (data_size, vocab_size))
 char_to_ix = { ch:i for i,ch in enumerate(chars) }
 ix_to_char = { i:ch for i,ch in enumerate(chars) }
 
@@ -34,7 +34,7 @@ def lossFun(inputs, targets, hprev):
   hs[-1] = np.copy(hprev)
   loss = 0
   # Lecture du réseau de neurones du premier au dernier dans cet ordre (forward pass)
-  for t in xrange(len(inputs)):
+  for t in range(len(inputs)):
     xs[t] = np.zeros((vocab_size,1)) # encodage dans une représentation 1 sur k représentations totales
     xs[t][inputs[t]] = 1
     hs[t] = np.tanh(np.dot(Wxh, xs[t]) + np.dot(Whh, hs[t-1]) + bh) # état caché du réseau
@@ -45,7 +45,7 @@ def lossFun(inputs, targets, hprev):
   dWxh, dWhh, dWhy = np.zeros_like(Wxh), np.zeros_like(Whh), np.zeros_like(Why)
   dbh, dby = np.zeros_like(bh), np.zeros_like(by)
   dhnext = np.zeros_like(hs[0])
-  for t in reversed(xrange(len(inputs))):
+  for t in reversed(range(len(inputs))):
     dy = np.copy(ps[t])
     dy[targets[t]] -= 1 # retropropagation dans y. le lien http://cs231n.github.io/neural-networks-case-study/#grad permet de mieux comprendre l'événement
     dWhy += np.dot(dy, hs[t].T)
@@ -68,7 +68,7 @@ def sample(h, seed_ix, n):
   x = np.zeros((vocab_size, 1))
   x[seed_ix] = 1
   ixes = []
-  for t in xrange(n):
+  for t in range(n):
     h = np.tanh(np.dot(Wxh, x) + np.dot(Whh, h) + bh)
     y = np.dot(Why, h) + by
     p = np.exp(y) / np.sum(np.exp(y))
@@ -94,7 +94,7 @@ while True:
   if n % 100 == 0:
     sample_ix = sample(hprev, inputs[0], 200)
     txt = ''.join(ix_to_char[ix] for ix in sample_ix)
-    print '----\n %s \n----' % (txt, )
+    print('----\n %s \n----' % (txt, ))
 
   # forward seq_length characters through the net and fetch gradient
   loss, dWxh, dWhh, dWhy, dbh, dby, hprev = lossFun(inputs, targets, hprev)
