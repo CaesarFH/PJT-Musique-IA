@@ -33,21 +33,21 @@ def lossFun(inputs, targets, hprev):
   xs, hs, ys, ps = {}, {}, {}, {}
   hs[-1] = np.copy(hprev)
   loss = 0
-  # forward pass
+  # Lecture du réseau de neurones du premier au dernier dans cet ordre (forward pass)
   for t in xrange(len(inputs)):
     xs[t] = np.zeros((vocab_size,1)) # encodage dans une représentation 1 sur k représentations totales
     xs[t][inputs[t]] = 1
-    hs[t] = np.tanh(np.dot(Wxh, xs[t]) + np.dot(Whh, hs[t-1]) + bh) # hidden state
+    hs[t] = np.tanh(np.dot(Wxh, xs[t]) + np.dot(Whh, hs[t-1]) + bh) # état caché du réseau
     ys[t] = np.dot(Why, hs[t]) + by # unnormalized log probabilities for next chars
-    ps[t] = np.exp(ys[t]) / np.sum(np.exp(ys[t])) # probabilities for next chars
+    ps[t] = np.exp(ys[t]) / np.sum(np.exp(ys[t])) # probabilités du prochain caractère
     loss += -np.log(ps[t][targets[t],0]) # softmax (cross-entropy loss)
-  # backward pass: compute gradients going backwards
+  # Lecture du réseau de neurones du dernier au premier dans cet ordre (backward pass)
   dWxh, dWhh, dWhy = np.zeros_like(Wxh), np.zeros_like(Whh), np.zeros_like(Why)
   dbh, dby = np.zeros_like(bh), np.zeros_like(by)
   dhnext = np.zeros_like(hs[0])
   for t in reversed(xrange(len(inputs))):
     dy = np.copy(ps[t])
-    dy[targets[t]] -= 1 # backprop into y. see http://cs231n.github.io/neural-networks-case-study/#grad if confused here
+    dy[targets[t]] -= 1 # retropropagation dans y. le lien http://cs231n.github.io/neural-networks-case-study/#grad permet de mieux comprendre l'événement
     dWhy += np.dot(dy, hs[t].T)
     dby += dy
     dh = np.dot(Why.T, dy) + dhnext # retropropagation du gradient dans h (https://fr.wikipedia.org/wiki/R%C3%A9tropropagation_du_gradient)
@@ -57,7 +57,7 @@ def lossFun(inputs, targets, hprev):
     dWhh += np.dot(dhraw, hs[t-1].T)
     dhnext = np.dot(Whh.T, dhraw)
   for dparam in [dWxh, dWhh, dWhy, dbh, dby]:
-    np.clip(dparam, -5, 5, out=dparam) # clip to mitigate exploding gradients
+    np.clip(dparam, -5, 5, out=dparam) # fonction clip afin de réduire le phénomène de gradient qui explose https://machinelearningmastery.com/exploding-gradients-in-neural-networks/
   return loss, dWxh, dWhh, dWhy, dbh, dby, hs[len(inputs)-1]
 
 def sample(h, seed_ix, n):
@@ -108,5 +108,5 @@ while True:
     mem += dparam * dparam
     param += -learning_rate * dparam / np.sqrt(mem + 1e-8) # adagrad update
 
-  p += seq_length # move data pointer
-  n += 1 # iteration counter 
+  p += seq_length # permet de faire bouger le pointeur
+  n += 1 # compteur d'itérations 
